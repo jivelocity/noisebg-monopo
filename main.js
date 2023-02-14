@@ -13,6 +13,10 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
 
+import _vite_plugin_require_transform_case2 from 'simple-input-events'
+
+let createInputEvents = _vite_plugin_require_transform_case2
+
 import _vite_plugin_require_transform_case1 from 'nice-color-palettes'
 
 var colors = _vite_plugin_require_transform_case1
@@ -47,6 +51,9 @@ export default class Sketch {
 		this.wrapper.appendChild(this.renderer.domElement)
 		// this.controls = new OrbitControls(this.camera, this.renderer.domElement)
 
+		this.mouse = new THREE.Vector2()
+		this.mouseTarget = new THREE.Vector2()
+		this.event = createInputEvents(this.renderer.domElement)
 		this.time = 0
 		this.initPost()
 		this.settings()
@@ -55,6 +62,16 @@ export default class Sketch {
 		this.render()
 
 		this.setupResize()
+		this.events()
+	}
+
+	events() {
+		this.event.on('move', ({ uv }) => {
+			this.mouse.x = uv[0] - 0.5
+			this.mouse.y = uv[1] - 0.5
+
+			console.log(this.mouse)
+		})
 	}
 
 	settings() {
@@ -219,8 +236,11 @@ export default class Sketch {
 		this.smallSphere.visible = true
 		this.smallSphereMaterial.uniforms.tCube.value = this.CubeRenderTarget.texture
 		this.material.uniforms.time.value = this.time
-		this.mesh.rotation.x = this.time / 2000
-		this.mesh.rotation.y = this.time / 1000
+
+		this.mouseTarget.lerp(this.mouse, 0.1)
+
+		this.mesh.rotation.x = -this.mouse.y * 0.5
+		this.mesh.rotation.y = this.mouse.x * 0.5
 
 		this.camera.getWorldDirection(this.cameraDirection)
 		// scale the unit vector up to get a more intuitive value
